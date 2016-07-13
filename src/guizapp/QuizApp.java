@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 public class QuizApp {
@@ -23,8 +24,8 @@ public class QuizApp {
 	private JTextField textField;
 	int userScore ;
 	int userSelectedOption ;
-	ReadToHashmap QuestionSet = new ReadToHashmap();
-	QuestionProvider QAndA  = new QuestionProvider();
+	ReadToHashmap QuestionSet ;
+	QuestionProvider QAndA ;
 	private JTextField txtScore;
 	private JTextField textField_1;
 	private JRadioButton rdbtnNewRadioButton = new JRadioButton();	
@@ -33,7 +34,8 @@ public class QuizApp {
 	JRadioButton rdbtnNewRadioButton_3 = new JRadioButton();	
 	int correctValue ;
 	private int m_score =0 ;
-
+	JButton btnRestart ;	
+	JLabel lblAccuracy ;
 	/**
 	 * Launch the application.
 	 */
@@ -62,7 +64,23 @@ public class QuizApp {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		String[] firstQuestion = QAndA.GetQuestionsAndOptions();
+		
+		 QuestionSet = new ReadToHashmap();
+		 QAndA  = new QuestionProvider();
+		
+		String[] firstQuestion  = null;
+		try
+		{
+			firstQuestion = QAndA.GetQuestionsAndOptions();			
+		}
+		catch(AllQuestionsDone e)
+		{
+			e.getMessage();
+		}
+		catch(Exception e)
+		{
+			e.getMessage();
+		}
 		correctValue = QAndA.GetCorrectValue()+1;
 		frame = new JFrame();
 		frame.setBounds(100, 100, 892, 457);
@@ -156,7 +174,7 @@ public class QuizApp {
 		lblLiveScore.setBounds(592, 358, 67, 19);
 		frame.getContentPane().add(lblLiveScore);
 		
-		JLabel lblAccuracy = new JLabel("Accuracy");
+		 lblAccuracy = new JLabel("Accuracy");
 		lblAccuracy.setBounds(600, 313, 59, 19);
 		frame.getContentPane().add(lblAccuracy);
 		
@@ -167,10 +185,40 @@ public class QuizApp {
 		textField_1.setBounds(661, 311, 116, 22);
 		frame.getContentPane().add(textField_1);
 		
+		btnRestart = new JButton("Restart");
+		btnRestart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				btnRestart.setVisible(false);
+				 QuestionSet = new ReadToHashmap();
+				 QAndA  = new QuestionProvider();
+				 m_score=0;
+			}
+		});
+		btnRestart.setBounds(24, 340, 97, 25);
+		frame.getContentPane().add(btnRestart);
+		btnRestart.setVisible(false);
+		
 	}
 	public void updatewithNextQuestion()
 	{
-		String[] firstQuestion = QAndA.GetQuestionsAndOptions();
+		String[] firstQuestion = null;
+		try
+		{
+			firstQuestion = QAndA.GetQuestionsAndOptions();			
+		}
+		catch(AllQuestionsDone e)
+		{
+		    JOptionPane.showMessageDialog(null, e.toString(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+			btnRestart.setVisible(true);
+
+			return ;
+		}
+		catch(Exception e)
+		{
+			e.getMessage();
+		}
 		correctValue = QAndA.GetCorrectValue()+1;
 		textField.setText(firstQuestion[0]);
 		rdbtnNewRadioButton.setText(firstQuestion[0]);	
@@ -185,12 +233,17 @@ public class QuizApp {
 	{
 		if(correctValue == userSelectedOption)
 		{
+			m_score++ ;
 
-			txtScore.setText("Correct");
+		}	
+		txtScore.setText(Integer.toString(m_score));
+		if((float)QAndA.myAskedQuestions.size() !=0)
+		{
+			float percent = ((float)m_score/QAndA.myAskedQuestions.size())*100;
+			textField_1.setText(Float.toString(percent));
 		}
-		else
-			txtScore.setText("Wrong");
-			
+
+		
 			
 	}
 	
